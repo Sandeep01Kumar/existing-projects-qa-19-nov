@@ -8,11 +8,6 @@ const app = express();
 app.get('/', (req, res) => res.setHeader('Content-Type', 'text/plain').end('Hello, World!\n'));
 app.get('/good-evening', (req, res) => res.setHeader('Content-Type', 'text/plain').end('Good evening\n'));
 
-app.listen(port, hostname, (err) => {
-  if (err) {
-    console.error(err.message);
-    process.exitCode = 1;
-    return;
-  }
+app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
