@@ -10,15 +10,30 @@ let failed = false;
 
 function send(method, path) {
   return new Promise((resolve, reject) => {
+    let settled = false;
+    let timer;
+    const settle = (fn, value) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timer);
+      fn(value);
+    };
     const req = http.request({ host: '127.0.0.1', port: 3000, method, path }, (res) => {
       let body = '';
       res.setEncoding('utf8');
       res.on('data', (chunk) => {
         body += chunk;
       });
-      res.on('end', () => resolve({ status: res.statusCode, body }));
+      res.on('end', () => settle(resolve, { status: res.statusCode, body }));
+      res.on('error', (err) => settle(reject, err));
     });
-    req.on('error', reject);
+    req.on('error', (err) => settle(reject, err));
+    timer = setTimeout(() => {
+      settle(reject, new Error('request timed out after 2000 ms'));
+      req.destroy();
+    }, 2000);
     req.end();
   });
 }
